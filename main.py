@@ -7,6 +7,8 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
 
+import bcrypt
+
 # CARACTERIZANDO A PÁGINA -------------------
 
 window = tkinter.Tk()
@@ -254,11 +256,14 @@ result = db.collection('Funcionarios').document("users").get()
 #--------------------
 def enter_data():
     accept = validacao_var.get()
+    salt = bcrypt.gensalt()
     
     if accept == "Aceito":
         primeiro_nome = primeiro_nome_input.get()
         sobrenome = sobrenome_input.get()
         email = email_input.get()
+        senha = senha_input.get()
+        senha_hash = bcrypt.hashpw(senha.encode('utf-8'), salt)
         
         if primeiro_nome and sobrenome and email:
             cargo = cargo_combobox.get()
@@ -272,7 +277,8 @@ def enter_data():
                     "sobrenome": sobrenome,
                     "cargo": cargo,
                     "sexo": sexo,
-                    "email": email
+                    "email": email,
+                    "senha": senha_hash
                 }
 
                 doc_ref = db.collection("Funcionarios").document()
@@ -290,12 +296,15 @@ def enter_data():
 import tkinter.messagebox
 
 def teste_print():
-    emailteste = email_input.get()
-    result = db.collection('Funcionarios').where('email', '==', emailteste).get()
-    if len(result) == 0:
-        tkinter.messagebox.showwarning(title="Erro", message="Login feito com sucesso!!!")
-    else:
-        tkinter.messagebox.showwarning(title="Erro", message="Usuário já existente")
+  salt = bcrypt.gensalt()
+  senha = senha_input.get()
+  senha_hash = bcrypt.hashpw(senha.encode('utf-8'), salt)
+  
+  data = {
+        "senha": senha_hash
+        }
+  doc_ref = db.collection("Senhas").document("usuario1")
+  doc_ref.set(data)
 
     
 
